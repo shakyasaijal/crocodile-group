@@ -1,0 +1,13 @@
+/* Styles for screens with a maximum width of 600px */
+@media (max-width: 600px) {
+  .small-block{
+    width: 100%;
+  }
+}
+
+/* Styles for screens with a minimum width of 601px and a maximum width of 900px */
+@media (min-width: 601px) and (max-width: 900px) {
+    .small-block{
+        width: 60%;
+    }
+}

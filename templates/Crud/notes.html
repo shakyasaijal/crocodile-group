@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}My Notes{% endblock %}
+{% block content %}
+<div class="flex">
+    <h1>My Notes</h1>
+    <a href="{{ url_for('create') }}" class="create-btn">+ Create New Notes</a>
+</div>
+<div class="search">
+    <form method="POST" action="/search">
+        <div class="search-item">
+            <label for="search">Search with Tags:</label>
+            <input type="text" name="search" required>
+            <button type="submit">Search</button>
+        </div>
+    </form>
+</div>
+<ul class="overflow">
+    <table>
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th>Title</th>
+                <th>Tags</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Notes will be dynamically generated here -->
+            {% for post in notes %}
+                <tr>
+                    <td>{{loop.index}}</td>
+                    <td>
+                        <a href="{{ url_for('view_post', post_id=post['_id']) }}">{{ post['title'] }}</a>
+                    </td>
+                    <td>
+                        {{ post.tags|join(', ') }}
+                    </td>
+                    <td>{{ post.created_at.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                    <td>{{ post.updated_at.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                    <td>
+                        <a href="{{ url_for('view_post', post_id=post['_id']) }}" class="success">View</a> |
+                        <a href="{{ url_for('edit_note', post_id=post['_id']) }}" class="update">Edit</a> | 
+                        <a href="{{ url_for('delete_note', post_id=post['_id']) }}" class="error" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% for post in notes %}
+    <li>
+        <a href="{{ url_for('view_post', post_id=post['_id']) }}">{{ post['title'] }}</a>
+        <a href="{{ url_for('edit_post', post_id=post['_id']) }}">Edit</a>
+        <a href="{{ url_for('delete_post', post_id=post['_id']) }}" onclick="return confirm('Are you sure?')">Delete</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,150 @@
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from config import config
+
+# Create flask app
+app = Flask(__name__)
+
+# Load all config files
+app.config.from_object(config)
+
+# Create MongoDB Client
+client = MongoClient(app.config['MONGO_URI'])
+
+# Database Name
+db = client['notes_db']
+
+# Collections
+users_collection = db['users']
+notes_collection = db['notes']
+
+# Initialize Login Manager from Flask Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, user_id, username):
+        self.id = user_id
+        self.username = username
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        return User(str(user["_id"]), user["username"])
+    return None
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password)
+        users_collection.insert_one({"username": username, "password": hashed_password})
+        flash('Registration successful. Please log in.', "success")
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = users_collection.find_one({"username": username})
+        if user and check_password_hash(user['password'], password):
+            login_user(User(str(user['_id']), user['username']))
+            return redirect(url_for('index'))
+        flash('Invalid username or password.', "error")
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/')
+@login_required
+def index():
+    notes = notes_collection.find({"user_id": current_user.id})
+    return render_template('Crud/notes.html', notes=notes)
+
+
+@app.route('/create', methods=['GET', 'POST'])
+@login_required
+def create():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        tags = request.form.get('tags', '').split(',')
+        current_time = datetime.now()
+        post = {
+            'user_id': current_user.id,
+            'title': title,
+            'content': content,
+            'tags': tags,
+            'created_at': current_time,
+            'updated_at': current_time
+            }
+        notes_collection.insert_one(post)
+        flash("New note has been created successfully.", "success")
+        return redirect(url_for('index'))
+    return render_template('Crud/create.html')
+
+
+@app.route('/view/<post_id>')
+@login_required
+def view_post(post_id):
+    notes = notes_collection.find_one({"_id": ObjectId(post_id), "user_id": current_user.id})
+    if not notes:
+        return redirect(url_for('index'))
+    return render_template('Crud/view_note.html', notes=notes)
+
+
+@app.route('/edit/<post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_note(post_id):
+    post = notes_collection.find_one({"_id": ObjectId(post_id), "user_id": current_user.id})
+    if not post:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        tags = request.form.get('tags', '').split(',')
+        current_time = datetime.now()
+        notes_collection.update_one({'_id': ObjectId(post_id)}, {'$set': {'title': title, 'content': content, 'tags': tags, 'updated_at': current_time}})
+        flash(f"{title} has been successfully updated.", "success")
+        return redirect(url_for('index'))
+
+    return render_template('Crud/edit_note.html', post=post)
+
+
+@app.route('/delete/<post_id>')
+@login_required
+def delete_note(post_id):
+    notes_collection.delete_one({'_id': ObjectId(post_id), "user_id": current_user.id})
+    flash("Note has been successfully deleted.", "success")
+    return redirect(url_for('index'))
+
+
+@app.route('/search', methods=['POST'])
+@login_required
+def search():
+    if request.method == 'POST':
+        search_tag = request.form['search']
+        notes = notes_collection.find({'tags': {'$regex': search_tag, '$options': 'i'}})
+        return render_template('search_results.html', notes=notes, search_name=request.form['search'])
+    return redirect(url_for('index'))
+
+if __name__ == "__main__":
+    app.run(debug=True)

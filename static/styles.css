@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+nav {
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+}
+
+nav a {
+    color: #fff;
+    margin: 0 1rem;
+    text-decoration: none;
+}
+
+.container {
+    padding: 2rem;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 0.5rem 0 0.2rem;
+}
+
+input, textarea, button {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin: 0.5rem 0;
+}
+
+li a {
+    margin-right: 1rem;
+}
+.success{
+    color: green;
+}
+.error{
+    color: red;
+}
+.update{
+    color: yellowgreen;
+}
+.small-block{
+    width: 30%;
+    margin: auto;
+}
+.text-center{
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+a {
+    text-decoration: none;
+    color: #333;
+}
+
+a:hover {
+    color: #007bff;
+}
+.flex{
+    display: flex;
+    width: 100%;
+    height: auto;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+.flex > h1{
+    flex: 1;
+}
+.create-btn{
+    background-color: green;
+    padding: 10px 20px;
+    color: white;
+    float: right;
+}
+.create-btn:hover{
+    font-weight: bold;
+    color: white !important;
+}
+.overflow{
+    overflow: scroll;
+}
+.update-btn{
+    background-color: yellowgreen;
+}
+.delete-btn{
+    background-color: red;
+}

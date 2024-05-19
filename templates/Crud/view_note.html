@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}View Note | {{notes['title']}}{% endblock %}
+{% block content %}
+<a href="{{ url_for('index') }}">< Back to notes</a>
+<h2 class="text-center">{{ notes['title'] }}</h2>
+<p>{{ notes['content'] }}</p>
+<p><strong>Tags:</strong> {{ ', '.join(notes['tags']) }}</p>
+<a href="{{ url_for('edit_note', post_id=notes['_id']) }}"><button class="update-btn">Edit</button></a>
+<a href="{{ url_for('delete_note', post_id=notes['_id']) }}" onclick="return confirm('Are you sure?')"><button class="delete-btn">Delete</button></button></a>
+{% endblock %}
