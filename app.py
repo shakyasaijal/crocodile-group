@@ -33,6 +33,13 @@ class User(UserMixin):
         self.username = username
 
 
+# Custom unauthorized handler
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    flash("You must be logged in to access this page.", "error")
+    return redirect(url_for('login'))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     user = users_collection.find_one({"_id": ObjectId(user_id)})
@@ -48,13 +55,19 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        # Encrypt Password
-        hashed_password = generate_password_hash(password)
+        # Search if username already exists
+        user = users_collection.find_one({"username": username})
+        if user:
+            flash("You already have an account. Please login.", "error")
+            return redirect(url_for('login'))
+        else:
+            # Encrypt Password
+            hashed_password = generate_password_hash(password)
 
-        # Inserting in mongodb
-        users_collection.insert_one({"username": username, "password": hashed_password})
-        flash('Registration successful. Please log in.', "success")
-        return redirect(url_for('login'))
+            # Inserting in mongodb
+            users_collection.insert_one({"username": username, "password": hashed_password})
+            flash('Registration successful. Please log in.', "success")
+            return redirect(url_for('login'))
     return render_template('register.html')
 
 
@@ -81,6 +94,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash("You have been successfully logged out.", "success")
     return redirect(url_for('login'))
 
 
